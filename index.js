@@ -1,6 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
 const port = process.env.PORT || 5000;
 
@@ -31,7 +31,7 @@ async function boostrap() {
       const cursor = productsCluster.find({});
       const result = await cursor.toArray();
       res.send(result);
-      console.log(result.length)
+      console.log(result.length);
     });
 
     app.post("/products", async (req, res) => {
@@ -49,6 +49,18 @@ async function boostrap() {
         res.send(result);
       } catch (error) {
         console.log(error);
+      }
+    });
+
+    app.get("/productsDetails/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await productsCluster.findOne(query);
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+        res.send("Internal error");
       }
     });
 
