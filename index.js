@@ -157,7 +157,6 @@ async function boostrap() {
           .json({ success: false, message: "Internal Server Error" });
       }
     });
-    
 
     app.listen(port, () => {
       console.log(`This port is running: ${port}`);
@@ -168,7 +167,6 @@ async function boostrap() {
   } catch (error) {
     console.error("MongoDB Connection Error:", error);
   } finally {
-    // Ensures that the client will close when you finish/error
     // await client.close();
   }
 }
