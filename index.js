@@ -22,12 +22,14 @@ async function boostrap() {
     await client.connect();
     const productsCluster = client.db("pureNature").collection("products");
     const usersCluster = client.db("pureNature").collection("users");
+    const articlesCluster = client.db("pureNature").collection("articles");
 
     app.get("/", async (req, res) => {
       res.send("Pure Nature Server....");
       console.log("Pure Nature Server....");
     });
 
+    // products routes
     app.get("/products", async (req, res) => {
       const cursor = productsCluster.find({});
       const result = await cursor.toArray();
@@ -65,6 +67,8 @@ async function boostrap() {
       }
     });
 
+    // users routes
+
     app.get("/users", async (req, res) => {
       try {
         const cursor = usersCluster.find({});
@@ -80,12 +84,12 @@ async function boostrap() {
       try {
         const email = req.params.email;
         const query = { email: email };
-        const cursor = await usersCluster.findOne(query);
-        const result = cursor.toArray();
-        if (result) {
-          res.send(result);
+        const user = await usersCluster.findOne(query);
+
+        if (user) {
+          res.json(user);
         } else {
-          res.send("User not found");
+          res.status(404).send("User not found");
         }
       } catch (error) {
         console.error("Error retrieving user:", error);
@@ -103,6 +107,23 @@ async function boostrap() {
         res.send("Internal server error, user not regesterd properly!");
       }
     });
+
+    // article routes
+
+    app.post("/articles", async (req, res) => {
+      console.log("article hit");
+      try {
+        const data = req.body;
+        const result = await articlesCluster.insertOne(data);
+        res.json({ success: true, insertedId: result.insertedId });
+      } catch (error) {
+        console.log(error);
+        res
+          .status(500)
+          .json({ success: false, error: "Internal Server Error" });
+      }
+    });
+    
 
     app.listen(port, () => {
       console.log(`This port is running: ${port}`);
