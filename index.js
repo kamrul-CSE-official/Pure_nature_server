@@ -134,8 +134,34 @@ async function boostrap() {
       }
     });
 
+    app.get("/articles/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("Article ID: ", id);
+      const query = { _id: new ObjectId(id) };
+
+      try {
+        const article = await articlesCluster.findOne(query);
+
+        if (article) {
+          // Article was found, send it in the response
+          res.json({ success: true, article });
+        } else {
+          // No document was found (perhaps the ID doesn't exist)
+          res
+            .status(404)
+            .json({ success: false, message: "Article not found." });
+        }
+      } catch (error) {
+        console.error("Error fetching article:", error);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal Server Error" });
+      }
+    });
+
     app.delete("/articles/:id", async (req, res) => {
       const id = req.params.id;
+      console.log("Article: ", id);
       const query = { _id: new ObjectId(id) };
 
       try {
