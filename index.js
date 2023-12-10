@@ -100,9 +100,14 @@ async function boostrap() {
     app.post("/users", async (req, res) => {
       try {
         const userData = req.body;
+        const email = userData?.email;
+        const existingUser = await usersCluster.findOne({ email });
+
+        if (existingUser) {
+          return res.send("Email is already registered");
+        }
         const result = await usersCluster.insertOne(userData);
         res.send(result);
-        console.log(result);
       } catch (error) {
         res.send("Internal server error, user not regesterd properly!");
       }
