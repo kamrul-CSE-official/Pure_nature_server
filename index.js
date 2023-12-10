@@ -80,13 +80,19 @@ async function boostrap() {
       }
     });
 
+
     app.get("/users/:email", async (req, res) => {
       try {
         const email = req.params.email;
         const query = { email: email };
+
         const user = await usersCluster.findOne(query);
 
         if (user) {
+          const articles = await articlesCluster.find(query).toArray();
+
+          user.articles = articles;
+
           res.json(user);
         } else {
           res.status(404).send("User not found");
@@ -96,6 +102,8 @@ async function boostrap() {
         res.status(500).json({ message: "Internal Server Error" });
       }
     });
+    
+
 
     app.post("/users", async (req, res) => {
       try {
