@@ -21,6 +21,7 @@ async function boostrap() {
   try {
     await client.connect();
     const productsCluster = client.db("pureNature").collection("products");
+    const usersCluster = client.db("pureNature").collection("users");
 
     app.get("/", async (req, res) => {
       res.send("Pure Nature Server....");
@@ -37,13 +38,13 @@ async function boostrap() {
     app.post("/products", async (req, res) => {
       try {
         const data = {
-          name: "Puspa Love's Flowre",
-          type: "Flower Plant",
-          img: "https://m.media-amazon.com/images/I/81ADfcqZjIL._AC_UL480_FMwebp_QL65_.jpg",
+          name: "Protable Kodal",
+          type: "Agricultural Instruments",
+          img: "https://m.media-amazon.com/images/I/71xYp-On-AL._AC_UL480_FMwebp_QL65_.jpg",
           details: ` Package includes 8 bundles artificial calla lily flowers. Each bouquet houses 5 large stems, 20 adjustable leaves branches and 25 flowers head, generous and vivid.Each bunch of artificial flower is approx. 12"/30cm in length and 8"/20cm in width. Four colors for you to choose: white, red, yellow, purple, to create unique and romantic spring&summer atmosphere for your home. Our outdoor artificial flowers are made of environmental plastic, lifelike, high quality, UV resistant, never wither and not easy to fade, it keeps brillant color and blooming state year by year. Perfect garden decoration choice.`,
-          price: 30,
+          price: 609,
           stock: 100,
-          supplier: "Taposh",
+          supplier: "Kamrul",
         };
         const result = await productsCluster.insertOne(data);
         res.send(result);
@@ -61,6 +62,45 @@ async function boostrap() {
       } catch (error) {
         console.log(error);
         res.send("Internal error");
+      }
+    });
+
+    app.get("/users", async (req, res) => {
+      try {
+        const cursor = usersCluster.find({});
+        const result = await cursor.toArray();
+        res.send(result);
+        console.log(result.length);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    app.get("/users/:email", async (req, res) => {
+      try {
+        const email = req.params.email;
+        const query = { email: email };
+        const cursor = await usersCluster.findOne(query);
+        const result = cursor.toArray();
+        if (result) {
+          res.send(result);
+        } else {
+          res.send("User not found");
+        }
+      } catch (error) {
+        console.error("Error retrieving user:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+      }
+    });
+
+    app.post("/users", async (req, res) => {
+      try {
+        const userData = req.body;
+        const result = await usersCluster.insertOne(userData);
+        res.send(result);
+        console.log(result);
+      } catch (error) {
+        res.send("Internal server error, user not regesterd properly!");
       }
     });
 
