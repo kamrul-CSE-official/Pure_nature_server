@@ -110,8 +110,13 @@ async function boostrap() {
 
     // article routes
 
+    app.get("/articles", async (req, res) => {
+      const cursor = articlesCluster.find({});
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     app.post("/articles", async (req, res) => {
-      console.log("article hit");
       try {
         const data = req.body;
         const result = await articlesCluster.insertOne(data);
@@ -121,6 +126,30 @@ async function boostrap() {
         res
           .status(500)
           .json({ success: false, error: "Internal Server Error" });
+      }
+    });
+
+    app.delete("/articles/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+
+      try {
+        const result = await articlesCluster.deleteOne(query);
+
+        if (result.deletedCount === 1) {
+          // Document was successfully deleted
+          res.json({ success: true, message: "Article deleted successfully." });
+        } else {
+          // No document was deleted (perhaps the ID doesn't exist)
+          res
+            .status(404)
+            .json({ success: false, message: "Article not found." });
+        }
+      } catch (error) {
+        console.error("Error deleting article:", error);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal Server Error" });
       }
     });
     
