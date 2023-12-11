@@ -129,19 +129,6 @@ async function boostrap() {
       res.send(result);
     });
 
-    app.post("/articles", async (req, res) => {
-      try {
-        const data = req.body;
-        const result = await articlesCluster.insertOne(data);
-        res.json({ success: true, insertedId: result.insertedId });
-      } catch (error) {
-        console.log(error);
-        res
-          .status(500)
-          .json({ success: false, error: "Internal Server Error" });
-      }
-    });
-
     app.get("/articles/:id", async (req, res) => {
       const id = req.params.id;
       console.log("Article ID: ", id);
@@ -165,6 +152,43 @@ async function boostrap() {
           .status(500)
           .json({ success: false, message: "Internal Server Error" });
       }
+    });
+
+    app.post("/articles", async (req, res) => {
+      try {
+        const data = req.body;
+        const result = await articlesCluster.insertOne(data);
+        res.json({ success: true, insertedId: result.insertedId });
+      } catch (error) {
+        console.log(error);
+        res
+          .status(500)
+          .json({ success: false, error: "Internal Server Error" });
+      }
+    });
+
+    app.patch("/articlesUpdate/:id", async (req, res) => {
+      const id = req.params.id;
+      const newData = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateProduct = {
+        $set: {
+          title: newData.title,
+          content: newData.content,
+          img: newData.img,
+          date: newData.date,
+          author: newData.author,
+          email: newData.email,
+          authorImg: newData.authorImg,
+        },
+      };
+      const result = await articlesCluster.updateOne(
+        filter,
+        updateProduct,
+        options
+      );
+      res.send(result);
     });
 
     app.delete("/articles/:id", async (req, res) => {
