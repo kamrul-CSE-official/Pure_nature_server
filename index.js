@@ -236,7 +236,7 @@ async function boostrap() {
         const rental = await rentalCluster.findOne(query);
 
         if (rental) {
-          res.json({ success: true, article: rental });
+          res.json({ success: true, rental: rental });
         } else {
           res
             .status(404)
