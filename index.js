@@ -92,8 +92,10 @@ async function boostrap() {
 
         if (user) {
           const articles = await articlesCluster.find(query).toArray();
+          const rental = await rentalCluster.find(query).toArray();
 
           user.articles = articles;
+          user.rental = rental;
 
           res.json(user);
         } else {
