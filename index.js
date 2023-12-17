@@ -233,13 +233,11 @@ async function boostrap() {
       const query = { _id: new ObjectId(id) };
 
       try {
-        const article = await rentalCluster.findOne(query);
+        const rental = await rentalCluster.findOne(query);
 
-        if (article) {
-          // Article was found, send it in the response
-          res.json({ success: true, article });
+        if (rental) {
+          res.json({ success: true, article: rental });
         } else {
-          // No document was found (perhaps the ID doesn't exist)
           res
             .status(404)
             .json({ success: false, message: "Article not found." });
