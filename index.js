@@ -23,6 +23,7 @@ async function boostrap() {
     const productsCluster = client.db("pureNature").collection("products");
     const usersCluster = client.db("pureNature").collection("users");
     const articlesCluster = client.db("pureNature").collection("articles");
+    const rentalCluster = client.db("pureNature").collection("rental");
 
     app.get("/", async (req, res) => {
       res.send("Pure Nature Server....");
@@ -67,7 +68,9 @@ async function boostrap() {
       }
     });
 
+    //---------------
     // users routes
+    //---------------
 
     app.get("/users", async (req, res) => {
       try {
@@ -79,7 +82,6 @@ async function boostrap() {
         console.log(error);
       }
     });
-
 
     app.get("/users/:email", async (req, res) => {
       try {
@@ -102,8 +104,6 @@ async function boostrap() {
         res.status(500).json({ message: "Internal Server Error" });
       }
     });
-    
-
 
     app.post("/users", async (req, res) => {
       try {
@@ -121,7 +121,9 @@ async function boostrap() {
       }
     });
 
+    //---------------
     // article routes
+    //---------------
 
     app.get("/articles", async (req, res) => {
       const cursor = articlesCluster.find({});
@@ -198,6 +200,103 @@ async function boostrap() {
 
       try {
         const result = await articlesCluster.deleteOne(query);
+
+        if (result.deletedCount === 1) {
+          // Document was successfully deleted
+          res.json({ success: true, message: "Article deleted successfully." });
+        } else {
+          // No document was deleted (perhaps the ID doesn't exist)
+          res
+            .status(404)
+            .json({ success: false, message: "Article not found." });
+        }
+      } catch (error) {
+        console.error("Error deleting article:", error);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal Server Error" });
+      }
+    });
+
+    //---------------
+    // rental
+    //---------------
+    app.get("/rental", async (req, res) => {
+      const cursor = rentalCluster.find({});
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.get("/rental/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("Article ID: ", id);
+      const query = { _id: new ObjectId(id) };
+
+      try {
+        const article = await rentalCluster.findOne(query);
+
+        if (article) {
+          // Article was found, send it in the response
+          res.json({ success: true, article });
+        } else {
+          // No document was found (perhaps the ID doesn't exist)
+          res
+            .status(404)
+            .json({ success: false, message: "Article not found." });
+        }
+      } catch (error) {
+        console.error("Error fetching article:", error);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal Server Error" });
+      }
+    });
+
+    app.post("/rental", async (req, res) => {
+      try {
+        const data = req.body;
+        const result = await rentalCluster.insertOne(data);
+        res.json({ success: true, insertedId: result.insertedId });
+      } catch (error) {
+        console.log(error);
+        res
+          .status(500)
+          .json({ success: false, error: "Internal Server Error" });
+      }
+    });
+
+    app.patch("/rental/:id", async (req, res) => {
+      const id = req.params.id;
+      const newData = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateProduct = {
+        $set: {
+          title: newData.title,
+          content: newData.content,
+          price: newData.price,
+          place: newData.place,
+          img: newData.img,
+          owner: newData.owner,
+          email: newData.email,
+          authorImg: newData.authorImg,
+        },
+      };
+      const result = await articlesCluster.updateOne(
+        filter,
+        updateProduct,
+        options
+      );
+      res.send(result);
+    });
+
+    app.delete("/rental/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("Article: ", id);
+      const query = { _id: new ObjectId(id) };
+
+      try {
+        const result = await rentalCluster.deleteOne(query);
 
         if (result.deletedCount === 1) {
           // Document was successfully deleted
