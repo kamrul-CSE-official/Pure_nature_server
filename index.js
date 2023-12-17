@@ -275,9 +275,9 @@ async function boostrap() {
           price: newData.price,
           place: newData.place,
           img: newData.img,
-          owner: newData.owner,
+          ownerName: newData.ownerName,
           email: newData.email,
-          authorImg: newData.authorImg,
+          ownerImg: newData.ownerImg,
         },
       };
       const result = await articlesCluster.updateOne(
