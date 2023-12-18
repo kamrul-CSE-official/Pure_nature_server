@@ -266,28 +266,51 @@ async function boostrap() {
     });
 
     app.patch("/rental/:id", async (req, res) => {
-      const id = req.params.id;
-      const newData = req.body;
-      const filter = { _id: new ObjectId(id) };
-      const options = { upsert: true };
-      const updateProduct = {
-        $set: {
-          title: newData.title,
-          content: newData.content,
-          price: newData.price,
-          place: newData.place,
-          img: newData.img,
-          ownerName: newData.ownerName,
-          email: newData.email,
-          ownerImg: newData.ownerImg,
-        },
-      };
-      const result = await articlesCluster.updateOne(
-        filter,
-        updateProduct,
-        options
-      );
-      res.send(result);
+      try {
+        const id = req.params.id;
+
+        // if (!ObjectId.isValid(id)) {
+        //   return res
+        //     .status(400)
+        //     .json({ success: false, message: "Invalid ID format" });
+        // }
+
+        const newData = req.body;
+        const filter = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+
+        const updateProduct = {
+          $set: {
+            title: newData.title,
+            content: newData.content,
+            price: newData.price,
+            place: newData.place,
+            img: newData.img,
+            ownerName: newData.ownerName,
+            email: newData.email,
+            ownerImg: newData.ownerImg,
+          },
+        };
+
+        const result = await rentalCluster.updateOne(
+          filter,
+          updateProduct,
+          options
+        );
+
+        if (result.modifiedCount > 0) {
+          res.json({ success: true, message: "Article updated successfully" });
+        } else {
+          res
+            .status(404)
+            .json({ success: false, message: "Article not found" });
+        }
+      } catch (error) {
+        console.error("Error updating article:", error);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal Server Error" });
+      }
     });
 
     app.delete("/rental/:id", async (req, res) => {
